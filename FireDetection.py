@@ -120,7 +120,7 @@ model.compile(
     metrics=["accuracy"],
 )
 
-model.fit(dataset, epochs=7, validation_data=vdataset)
+model.fit(dataset, epochs=10, validation_data=vdataset)
 
 
 # In[184]:
