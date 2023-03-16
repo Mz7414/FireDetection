@@ -131,7 +131,7 @@ from PIL import Image
 import tensorflow as tf
 import numpy as np
 
-im = Image.open(f"match.jpg")
+im = Image.open("match.jpg") #圖片路徑
 y = tf.image.resize(im, (256, 256))
 image_resized = tf.reshape(y, (-1, 256, 256, 3))/normal
 prediction = model.predict(image_resized)
