@@ -1,8 +1,3 @@
-#!/usr/bin/env python
-# coding: utf-8
-
-# In[ ]:
-
 
 # 下載圖片並儲存
 import os
@@ -32,7 +27,6 @@ bing_crawler = BingImageCrawler(
 bing_crawler.crawl(keyword="parking", max_num=300)
 
 
-# In[ ]:
 
 
 #建立驗證用資料夾
@@ -58,7 +52,6 @@ google_crawler = GoogleImageCrawler(
 google_crawler.crawl(keyword='parking', max_num=100)
 
 
-# In[ ]:
 
 
 #檢測資料夾中是否有無法讀入的圖片並自動刪除
@@ -78,7 +71,6 @@ for filepath in Path(data_dir).rglob("*"):
             os.remove(filepath)
 
 
-# In[118]:
 
 
 # 到路徑尋找圖片資料夾並做資料預處理
@@ -93,43 +85,42 @@ dataset.element_spec
 vdataset = tf.keras.utils.image_dataset_from_directory("fire2",image_size=(256,256))
 vdataset = vdataset.map(lambda x,y : (x/normal,y*1))
 vdataset.element_spec
-#list(dataset.as_numpy_iterator())
 
 
-# In[ ]:
 
-
-from tensorflow.keras import layers, models
+from tensorflow.keras.layers import Dense,Flatten,Dropout
+from tensorflow.keras.callbacks import ModelCheckpoint
+from tensorflow.keras.applications import resnet_v2
+from tensorflow.keras.layers import Dense
+import numpy as np
 
 #tf.config.list_physical_devices('GPU') #啟用GPU
 
-model = models.Sequential()
-model.add(layers.Conv2D(32, (3, 3), activation="relu", input_shape=(256, 256, 3)))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation="relu"))
-model.add(layers.MaxPooling2D((2, 2)))
-model.add(layers.Conv2D(64, (3, 3), activation="relu"))
+m = resnet_v2.ResNet50V2(
+    include_top=False,
+    weights='imagenet',
+    input_shape=(256,256, 3),
+    pooling='max',
+    classifier_activation='softmax')
 
-model.add(layers.Flatten())
-model.add(layers.Dense(64, activation="relu"))
-model.add(layers.Dense(10)) 
+data_bias = np.log(1802./4657)
+initializer = tf.keras.initializers.Constant(data_bias)
 
-model.compile(
-    optimizer="adam",
-    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    metrics=["accuracy"],
-)
+flattened = Flatten()(m.output)
+fc = Dense(3, activation='softmax', bias_initializer=initializer, name="AddedDense2")(flattened)
+fc2 = Dropout(0.5)(fc)
+model = tf.keras.models.Model(inputs=m.input, outputs=fc2)
+model.compile(optimizer=tf.keras.optimizers.Adam(),
+    loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
+
+checkpoint = ModelCheckpoint(filepath='drive/MyDrive/best',monitor='val_loss',save_best_only=True)
+callback = [checkpoint]
 
 model.fit(dataset, epochs=10, validation_data=vdataset)
 
 
-# In[184]:
-
-
 #預測效果
 from PIL import Image
-import tensorflow as tf
-import numpy as np
 
 im = Image.open("match.jpg") #圖片路徑
 y = tf.image.resize(im, (256, 256))
