@@ -7,7 +7,7 @@
 ![](img/best.png)
 ### loss變化圖：
 ![](img/222.png)\
-### accuracy變化圖:\
+### accuracy變化圖:
 ![](img/333.png)\
-### 測試資料集正確率:\
+### 測試資料集正確率:
 ![](img/444.png)
