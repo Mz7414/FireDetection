@@ -107,8 +107,8 @@ data_bias = np.log(1802./4657)
 initializer = tf.keras.initializers.Constant(data_bias)
 
 flattened = Flatten()(m.output)
-fc = Dense(3, activation='softmax', bias_initializer=initializer, name="AddedDense2")(flattened)
-fc2 = Dropout(0.5)(fc)
+fc = Dense(4, activation='softmax', bias_initializer=initializer, name="AddedDense2")(flattened)
+fc2 = Dropout(0.3)(fc)
 model = tf.keras.models.Model(inputs=m.input, outputs=fc2)
 model.compile(optimizer=tf.keras.optimizers.Adam(),
     loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True), metrics=['accuracy'])
@@ -116,8 +116,7 @@ model.compile(optimizer=tf.keras.optimizers.Adam(),
 checkpoint = ModelCheckpoint(filepath='drive/MyDrive/best',monitor='val_loss',save_best_only=True)
 callback = [checkpoint]
 
-model.fit(dataset, epochs=10, validation_data=vdataset)
-
+model.fit(dataset, validation_data=vdataset ,batch_size=32, callbacks=callback, epochs=100)
 
 #預測效果
 from PIL import Image
